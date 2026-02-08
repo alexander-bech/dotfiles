@@ -2,7 +2,7 @@
 
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 echo ".cfg" >> .gitignore
-git clone git@github.com:alillevangbech/dotfiles.git $HOME/.cfg
+git clone git@github-private.com:alillevangbech/dotfiles.git $HOME/.cfg
 rm .bashrc .bash_logout .bashrc
 config checkout
 config config --local status.showUntrackedFiles no

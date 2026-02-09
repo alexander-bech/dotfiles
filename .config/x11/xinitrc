@@ -1,9 +1,9 @@
-.local/bin/rekeymap.sh
-.local/bin/wallbg
-slstatus &
-xcompmgr &
-unclutter &
-pidof -s runit &&
-	! pidof -s pulseaudio >/dev/null 2>&1 &&
-	setsid -f pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1
-ssh-agent dwm
+# .local/bin/rekeymap.sh
+# .local/bin/wallbg
+# slstatus &
+# xcompmgr &
+# unclutter &
+# pidof -s runit &&
+# 	! pidof -s pulseaudio >/dev/null 2>&1 &&
+# 	setsid -f pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1
+# ssh-agent dwm

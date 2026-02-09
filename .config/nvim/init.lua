@@ -1,6 +1,18 @@
 vim.opt.clipboard = "unnamedplus"   -- optional: makes normal y/p use system clipboard
-vim.g.clipboard = "win32yank"
+vim.opt.expandtab   = true      -- Pressing Tab inserts spaces
+vim.opt.tabstop     = 2         -- How many columns a real TAB character takes up visually
+vim.opt.softtabstop = 2         -- How many spaces <Tab> / <BS> feel like in insert mode
+vim.opt.shiftwidth  = 2         -- Size of one indent level (>> , << , = , autoindent…)
 
+local is_wsl = vim.env.WSL_DISTRO_NAME ~= nil
+local is_ssh = vim.env.SSH_CLIENT ~= nil
+
+if is_ssh then
+	vim.g.clipboard = "osc52"
+elseif is_wsl then
+	vim.g.clipboard = "win32yank"
+end
+	
 vim.g.mapleader = " "
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

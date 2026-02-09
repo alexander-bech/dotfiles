@@ -1,0 +1,43 @@
+# Very minimal Starship prompt: just user • directory • git branch
+
+add_newline = false
+
+format = """$username$directory$git_branch$character"""
+
+# ────────────────────────────────────────
+# Username (only shown when root or in SSH)
+# ────────────────────────────────────────
+[username]
+show_always = false          # change to true if you always want to see it
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style) "
+
+# ────────────────────────────────────────
+# Directory (shortened a bit, but readable)
+# ────────────────────────────────────────
+[directory]
+style = "bold blue"
+truncation_length = 3
+truncate_to_repo = true      # shortens to repo root when in git repo
+format = "[$path]($style) "
+
+# ────────────────────────────────────────
+# Git branch (only branch name, no extra symbols)
+# ────────────────────────────────────────
+[git_branch]
+symbol = ""
+style = "bold purple"
+format = "[$branch]($style) "
+
+# Optional: hide git status symbols / dirty indicator completely
+[git_status]
+disabled = true
+
+# ────────────────────────────────────────
+# Prompt character (simple $ or #)
+# ────────────────────────────────────────
+[character]
+success_symbol = "[ $](bold green)"
+error_symbol   = "[ $](bold red)"
+vicmd_symbol   = "[ ❮](bold green)"

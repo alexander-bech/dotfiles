@@ -1,5 +1,5 @@
-autoload -U colors && colors	# Load colors
-PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%} @ %{$fg[blue]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
+# autoload -U colors && colors	# Load colors
+# PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%} @ %{$fg[blue]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
 
 stty stop undef		# Disable ctrl-s to freeze terminal.
 
@@ -24,3 +24,5 @@ HISTFILE=~/.cache/zsh/history
 
 source "$XDG_CONFIG_HOME"/shell/aliasrc
 source "$XDG_CONFIG_HOME"/shell/profile
+
+eval "$(starship init zsh)"

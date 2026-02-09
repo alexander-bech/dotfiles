@@ -4,6 +4,23 @@ Personal dotfiles managed as a bare git repository.
 
 ## Quick Install
 
+# Add user
+**One-liner (as root):**
+```bash
+USERNAME=aibot &&
+useradd -m -s /bin/bash "$USERNAME" &&
+usermod -aG sudo "$USERNAME" &&
+passwd "$USERNAME" &&
+# optional ssh key copy:
+[ -f /root/.ssh/authorized_keys ] && {
+    cp -r /root/.ssh "/home/$USERNAME/" &&
+    chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.ssh" &&
+    chmod 700 "/home/$USERNAME/.ssh" &&
+    chmod 600 "/home/$USERNAME/.ssh/"*
+}
+```
+
+# Install as user
 ```bash
 # One-liner (requires git and curl)
 curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.local/bin/install-dotfiles.sh | bash
@@ -134,20 +151,6 @@ curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.loc
 curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.local/bin/install-dotfiles.sh | bash -s -- --https
 ```
 
-**One-liner (as root):**
-```bash
-USERNAME=aibot &&
-useradd -m -s /bin/bash "$USERNAME" &&
-usermod -aG sudo "$USERNAME" &&
-passwd "$USERNAME" &&
-# optional ssh key copy:
-[ -f /root/.ssh/authorized_keys ] && {
-    cp -r /root/.ssh "/home/$USERNAME/" &&
-    chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.ssh" &&
-    chmod 700 "/home/$USERNAME/.ssh" &&
-    chmod 600 "/home/$USERNAME/.ssh/"*
-}
-```
 
 ## Structure
 

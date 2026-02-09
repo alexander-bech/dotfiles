@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+# Assert we're in a tmux session
+if [ -z "$TMUX" ]; then
+    echo "Error: Not in a tmux session" >&2
+    exit 1
+fi
+
+# Assert we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository" >&2
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "Usage: gw <name>" >&2
+    exit 1
+fi
+
+# Get the parent directory name and path
+parent_dir=$(basename "$(pwd)")
+parent_path=$(dirname "$(pwd)")
+worktree_path="${parent_path}/${parent_dir}-$1"
+
+# Create the git worktree
+git worktree add "$worktree_path" -b "$1" 2>/dev/null || git worktree add "$worktree_path" "$1"
+
+# Create a new tmux pane and switch to the worktree directory
+tmux new-window -c "$worktree_path"

@@ -1,2 +1,0 @@
-#!/bin/sh
-rsync -rtvzP feanor:/var/www/lillevang/ ~/webpage/lillevang/

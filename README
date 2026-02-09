@@ -1,13 +1,34 @@
+## How to clone on a fresh user
+
 # create a fresh new user
 sudo useradd -m -s /bin/bash john && sudo usermod -aG sudo john
+sudo passwd john
+mkdir -p /home/john/.ssh
+sudo chmod 700 /home/john/.ssh
+sudo cp ~/.ssh/authorized_keys /home/john/.ssh/authorized_keys
+sudo chmod 600 /home/john/.ssh/authorized_keys
+sudo chown -R john:john /home/john/.ssh
+
+# exit and ssh in 
+ssh john@inhouse-serv -A
+
+# setup user
+sudo apt install git tmux curl
+
+# custom software
+curl -LsSf https://astral.sh/uv/install.sh | sh # uv
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+npm install -g @mariozechner/pi-coding-agent
+
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+echo ".cfg" >> .gitignore
+git clone git@github.com:alexander-bech/dotfiles.git $HOME/.cfg --bare
+rm .bashrc .bash_logout .bashrc .bash_history .profile
+config checkout
+config config --local status.showUntrackedFiles no
 
 # delete
 sudo deluser --remove-home john
 
-# How to clone on a fresh user
-alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-echo ".cfg" >> .gitignore
-git clone git@github-private.com:alillevangbech/dotfiles.git $HOME/.cfg
-rm .bashrc .bash_logout .bashrc
-config checkout
-config config --local status.showUntrackedFiles no
+
+

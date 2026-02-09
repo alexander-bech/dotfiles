@@ -1,176 +1,117 @@
--------------------- HELPERS -------------------------------
-local cmd = vim.cmd  -- to execute Vim commands e.g. cmd('pwd')
-local fn = vim.fn    -- to call Vim functions e.g. fn.bufnr()
-local g = vim.g      -- a table to access global variables
-local opt = vim.opt  -- to set options
+vim.opt.clipboard = "unnamedplus"   -- optional: makes normal y/p use system clipboard
+vim.g.clipboard = "win32yank"
 
-g.mapleader = ','
+vim.g.mapleader = " "
 
-local function map(mode, lhs, rhs, opts)
-	local options = {noremap = true}
-	if opts then options = vim.tbl_extend('force', options, opts) end
-	vim.api.nvim_set_keymap(mode, lhs, rhs, options)
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    lazypath,
+  })
 end
+vim.opt.rtp:prepend(lazypath)
 
--------------------- PLUGINS -------------------------------
+require("lazy").setup({
+  { "neovim/nvim-lspconfig" },
 
-if fn.filereadable(fn.system('echo -n "$HOME/.config/nvim/autoload/plug.vim"')) == 0 then
-	cmd "echo \"Downloading junegunn/vim-plug to manage plugins...\""
-	cmd "silent !mkdir -p $HOME/.config/nvim/autoload/"
-	cmd "silent !curl \"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim\" > $HOME/.config/nvim/autoload/plug.vim"
-end
-local Plug = fn['plug#']
+  -- Telescope: fuzzy finder for files, symbols, grep, etc.
+  {
+    "nvim-telescope/telescope.nvim",
+    branch = "master",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    },
+    config = function()
+      local telescope = require("telescope")
+      local builtin = require("telescope.builtin")
 
-vim.call('plug#begin', '~/.config/nvim/plugged')
--- Plug 'vim-airline/vim-airline'
--- Plug 'vim-airline/vim-airline-themes'
-Plug 'morhetz/gruvbox'
-Plug('junegunn/fzf', {['do'] = fn['fzf#install']})
-Plug 'junegunn/fzf.vim'
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
-Plug 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
-Plug 'L3MON4D3/LuaSnip' -- Snippets plugin
-Plug 'ojroques/nvim-lspfuzzy'
-Plug 'rafamadriz/friendly-snippets'
-vim.call('plug#end')
+      telescope.setup({
+        defaults = {
+          layout_strategy = "horizontal",
+          layout_config = { preview_width = 0.5 },
+          file_previewer = require("telescope.previewers").vim_buffer_cat.new,
+          grep_previewer = require("telescope.previewers").vim_buffer_vimgrep.new,
+        },
+      })
+      telescope.load_extension("fzf")
 
--------------------- OPTIONS -------------------------------
-cmd 'colorscheme gruvbox'
-opt.completeopt = {'menuone', 'noselect'}
-opt.wildmode = {'list', 'longest'}
-opt.clipboard = opt.clipboard + 'unnamedplus'
-opt.pumheight = 15 
-opt.number = true
-opt.hlsearch = false
-opt.hidden = true
-opt.tabstop = 4
-opt.shiftwidth = 4
-opt.autoindent = true
-opt.wrap = false
-opt.ignorecase = true
-opt.termguicolors = true            -- True color support
+      -- Keymaps
+      vim.keymap.set("n", "<C-p>", builtin.lsp_document_symbols, { desc = "Search symbols in file" })
+      vim.keymap.set("n", "<C-S-p>", builtin.lsp_workspace_symbols, { desc = "Search symbols in workspace" })
+      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
+      vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
+      vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find buffers" })
+    end,
+  },
 
--------------------- MAPPINGS ------------------------------
--- Make
-map('n', '<leader>b',"<cmd>w | !make -s<CR>")
-map('s', '<tab>',"f*xi")
+  {
+    "nvim-treesitter/nvim-treesitter",
+    lazy = false,
+    build = ":TSUpdate",
+  },
 
-map('n', '<leader>p', "<cmd>!oopt.sh %<CR>")
-map('n', '<leader>c', "<cmd>w | !compiler.sh %<CR>")
+  -- Add Gruvbox (from earlier)
+  {
+    "ellisonleao/gruvbox.nvim",
+    priority = 1000,
+    config = function()
+      require("gruvbox").setup({ contrast = "hard" })
+      vim.cmd("colorscheme gruvbox")
+    end,
+  },
 
--- keyboard slow
+  -- NEW: nvim-tree sidebar
+  {
+    "nvim-tree/nvim-tree.lua",
+    version = "*",  -- use latest
+    lazy = false,   -- load immediately so it's always ready
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",  -- icons in the tree
+    },
+    config = function()
+      require("nvim-tree").setup({
+        view = {
+          side = "left",              -- left sidebar
+          width = 35,                 -- adjust width as you like
+        },
+        renderer = {
+          group_empty = true,         -- collapse empty folders
+          highlight_git = true,       -- color git status
+          icons = {
+            show = {
+              file = true,
+              folder = true,
+              folder_arrow = true,
+              git = true,
+            },
+          },
+        },
+        filters = {
+          dotfiles = false,           -- show .git, .gitignore etc. (toggle with H)
+        },
+        git = {
+          enable = true,
+          ignore = false,
+        },
+        actions = {
+          open_file = {
+            quit_on_open = false,     -- keep tree open after opening file
+          },
+        },
+      })
 
-cmd 'command! Q quit'
-cmd 'command! W write'
-cmd 'command! Wq wq'
+      -- Optional: keymap to toggle the sidebar (like VS Code Ctrl+B)
+      vim.keymap.set("n", "<C-b>", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
+      -- Or auto-open on startup if you want:
+      -- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = function() require("nvim-tree.api").tree.open() end })
+    end,
+  },
+})
 
--------------------- PLUGIN SETUP ---------------------------
-require 'lspfuzzy'.setup {}
-
-local luasnip = require 'luasnip'
-local cmp = require 'cmp'
-cmp.setup {
-	completion = {
-		completeopt = 'menu,menuone,noinsert',
-		keyword_length = 2,
-	},
-	snippet = {
-		expand = function(args)
-			require('luasnip').lsp_expand(args.body)
-		end,
-	},
-	mapping = {
-		['<Up>'] = cmp.mapping.select_prev_item(),
-		['<Down>'] = cmp.mapping.select_next_item(),
-		['<Tab>'] = cmp.mapping.confirm {
-			behavior = cmp.ConfirmBehavior.Replace,
-			select = true,
-		},
-	},
-	sources = {
-		{ name = 'nvim_lsp' },
-		{ name = 'buffer' },
-		{ name = 'path' },
-		{ name = 'luasnip' },
-	},
-}
-
--------------------- LSP -----------------------------------
-
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.documentationFormat = { 'markdown', 'plaintext' }
-capabilities.textDocument.completion.completionItem.snippetSupport = true
-capabilities.textDocument.completion.completionItem.preselectSupport = true
-capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
-capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
-capabilities.textDocument.completion.completionItem.deprecatedSupport = true
-capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
-capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
-capabilities.textDocument.completion.completionItem.resolveSupport = {
-	properties = {
-		'documentation',
-		'detail',
-		'additionalTextEdits',
-	},
-}
-
-for ls, cfg in pairs({
-	pyright = {
-		handlers = {
-			["textDocument/publishDiagnostics"] = vim.lsp.with(
-			vim.lsp.diagnostic.on_publish_diagnostics, {
-				virtual_text = false
-			}),
-		},
-	},
-	-- texlab = {},
-	clangd = { 
-		cmd = { "/home/albec/tools/llvm/bin/clangd" },
-		capabilities = capabilities,
-		on_attach = on_attach,
-		handlers = {
-			["textDocument/publishDiagnostics"] = vim.lsp.with(
-			vim.lsp.diagnostic.on_publish_diagnostics, {
-				virtual_text = false
-			}),
-		},
-	},
-	gopls = {
-		cmd = {'gopls'},
-		capabilities = capabilities,
-		settings = {
-			gopls = {
-				experimentalPostfixCompletions = true,
-				analyses = {
-					unusedparams = true,
-					shadow = true,
-				},
-				staticcheck = true,
-			},
-		},
-		on_attach = on_attach,
-
-	},
-}) do require('lspconfig')[ls].setup(cfg) end
-
--- Movement
-map('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
-map('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
-map('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
-map('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>')
-map('n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-map('n', 'ge', '<cmd>lua vim.diagnostic.goto_next()<CR>')
-
--- Info
-map('n', '<C-q>', '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>')
-map('n', '<C-a>', '<cmd>lua vim.lsp.buf.code_action()<CR>')
-map('n', '<C-f>', '<cmd>lua vim.lsp.buf.formatting()<CR>')
-map('n', '<C-h>', '<cmd>lua vim.lsp.buf.hover()<CR>')
-
-
-
+-- Load LSP configuration
+require("lsp")

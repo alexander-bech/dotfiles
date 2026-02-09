@@ -1,5 +1,0 @@
-#!/bin/sh
-src="$HOME/pshare/quant/doc/"
-file=$(find $src -name "*.pdf" -type f | fzf)
-$READER $file &
-

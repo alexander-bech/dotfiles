@@ -1,6 +1,2 @@
-alias dir="ls -al"
-alias lf="lfrun"
 alias tmux="tmux -2"
 alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-alias light='backlight_control'
-alias abeet='beet -c '

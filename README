@@ -1,9 +1,13 @@
-# How to clone on a fresh user
+# create a fresh new user
+sudo useradd -m -s /bin/bash john && sudo usermod -aG sudo john
 
+# delete
+sudo deluser --remove-home john
+
+# How to clone on a fresh user
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 echo ".cfg" >> .gitignore
 git clone git@github-private.com:alillevangbech/dotfiles.git $HOME/.cfg
 rm .bashrc .bash_logout .bashrc
 config checkout
 config config --local status.showUntrackedFiles no
-

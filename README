@@ -1,38 +1,135 @@
-## How to clone on a fresh user
+# Dotfiles
 
-# create a fresh new user
-sudo useradd -m -s /bin/bash john && sudo usermod -aG sudo john
-sudo passwd john
-mkdir -p /home/john/.ssh
-sudo chmod 700 /home/john/.ssh
-sudo cp ~/.ssh/authorized_keys /home/john/.ssh/authorized_keys
-sudo chmod 600 /home/john/.ssh/authorized_keys
-sudo chown -R john:john /home/john/.ssh
+Personal dotfiles managed as a bare git repository.
 
-# exit and ssh in 
-ssh john@inhouse-serv -A
+## Quick Install
 
-# setup user
-sudo apt install git tmux curl zsh wget ripgrep starship
+```bash
+# One-liner (requires git and curl)
+curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.local/bin/install-dotfiles.sh | bash
+```
+
+Or clone and run manually:
+```bash
+git clone https://github.com/alexander-bech/dotfiles.git /tmp/dotfiles
+bash /tmp/dotfiles/.local/bin/install-dotfiles.sh
+```
+
+### Installation Options
+
+```bash
+# Install without extra software (just dotfiles)
+./install-dotfiles.sh --no-extras
+
+# Use HTTPS instead of SSH (if you don't have SSH keys set up)
+./install-dotfiles.sh --https
+
+# Show help
+./install-dotfiles.sh --help
+```
+
+## What Gets Installed
+
+### Base Dependencies
+- git, tmux, curl, zsh, wget, ripgrep
+
+### Optional Software (use --no-extras to skip)
+- [starship](https://starship.rs/) - Cross-shell prompt
+- [uv](https://github.com/astral-sh/uv) - Fast Python package manager
+- [nvm](https://github.com/nvm-sh/nvm) + Node.js
+- [neovim](https://neovim.io/) - Latest release
+
+## Manual Installation
+
+If you prefer to install manually or the script doesn't work for your system:
+
+```bash
+# 1. Install dependencies
+sudo apt install git tmux curl zsh wget ripgrep  # Debian/Ubuntu
+# sudo dnf install git tmux curl zsh wget ripgrep  # Fedora
+# sudo pacman -S git tmux curl zsh wget ripgrep    # Arch
+
+# 2. Clone dotfiles as bare repo
+git clone --bare https://github.com/alexander-bech/dotfiles.git $HOME/.cfg
+
+# 3. Define the config alias
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-echo ".cfg" >> .gitignore
-git clone git@github.com:alexander-bech/dotfiles.git $HOME/.cfg --bare
-rm .bashrc .bash_logout .bashrc .bash_history .profile
+
+# 4. Ignore the bare repo directory
+echo ".cfg" >> $HOME/.gitignore
+
+# 5. Checkout the files (backup any conflicts first!)
 config checkout
+
+# 6. Hide untracked files in status
 config config --local status.showUntrackedFiles no
-chsh -s /bin/zsh
-source ~/.config/zsh/.zshrc
 
-# custom software
-curl -LsSf https://astral.sh/uv/install.sh | sh # uv
+# 7. Change shell to zsh
+chsh -s $(which zsh)
+
+# 8. Install optional software
+curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -sS https://starship.rs/install.sh | sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
-source ~/.config/zsh/.zshrc
-nvm install node
-npm install -g @mariozechner/pi-coding-agent
-wget https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz && tar -xvf nvim-linux-x86_64.tar.gz && ln -s ~/nvim-linux-x86_64/bin/nvim ~/.local/bin/nvim
+```
 
-# delete
-sudo deluser --remove-home john
+## Usage
 
+After installation, use the `config` alias to manage dotfiles:
 
+```bash
+config status                    # Check status
+config add ~/.config/nvim/init.lua   # Stage a file
+config commit -m "Update nvim config"  # Commit
+config push                      # Push to remote
+```
 
+## Creating a New User with Dotfiles
+
+Use the included helper script to create a new user with SSH access:
+
+```bash
+# Create user only
+~/.local/bin/create-user.sh john
+
+# Create user and set up full environment
+~/.local/bin/create-user.sh john --with-setup
+```
+
+## Structure
+
+```
+~/.config/
+    nvim/          # Neovim configuration
+    zsh/           # Zsh configuration
+    tmux/          # Tmux configuration
+    starship.toml  # Starship prompt config
+    shell/         # Shell profile and aliases
+    ...
+
+~/.local/bin/      # Personal scripts
+```
+
+## Troubleshooting
+
+### "SSH connection failed" during clone
+Use the `--https` flag or set up SSH keys:
+```bash
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub  # Add to GitHub
+```
+
+### Conflicting files
+The installer backs up conflicts to `~/.dotfiles-backup-<timestamp>/`
+
+### Shell not changing
+Log out and back in, or run `exec zsh`
+
+### Starship not loading
+Ensure `~/.local/bin` is in your PATH and restart your shell
+
+## Delete User
+
+```bash
+sudo deluser --remove-home username
+```

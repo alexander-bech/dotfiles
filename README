@@ -38,6 +38,7 @@ bash /tmp/dotfiles/.local/bin/install-dotfiles.sh
 - [uv](https://github.com/astral-sh/uv) - Fast Python package manager
 - [nvm](https://github.com/nvm-sh/nvm) + Node.js
 - [neovim](https://neovim.io/) - Latest release
+- [go](https://go.dev/) - Latest release
 
 ## Manual Installation
 
@@ -71,6 +72,14 @@ chsh -s $(which zsh)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 curl -sS https://starship.rs/install.sh | sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+
+# 9. Install Go (latest)
+GO_VERSION=$(curl -sL 'https://go.dev/VERSION?m=text' | head -1)
+wget "https://go.dev/dl/${GO_VERSION}.linux-amd64.tar.gz"
+tar -xzf "${GO_VERSION}.linux-amd64.tar.gz"
+mv go ~/.local/go
+ln -sf ~/.local/go/bin/go ~/.local/bin/go
+ln -sf ~/.local/go/bin/gofmt ~/.local/bin/gofmt
 ```
 
 ## Usage
@@ -94,6 +103,50 @@ Use the included helper script to create a new user with SSH access:
 
 # Create user and set up full environment
 ~/.local/bin/create-user.sh john --with-setup
+```
+
+## Fresh Server Setup (SSH as root)
+
+When you SSH into a new server as root and want to create a user with dotfiles:
+
+**1. Create the user (as root):**
+```bash
+useradd -m -s /bin/bash <username>
+usermod -aG sudo <username>
+passwd <username>
+
+# Copy SSH keys to new user
+mkdir -p /home/<username>/.ssh
+cp ~/.ssh/authorized_keys /home/<username>/.ssh/
+chmod 700 /home/<username>/.ssh
+chmod 600 /home/<username>/.ssh/authorized_keys
+chown -R <username>:<username> /home/<username>/.ssh
+```
+
+**2. SSH as the new user and install dotfiles:**
+```bash
+ssh <username>@<server> -A
+
+# Run the install script
+curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.local/bin/install-dotfiles.sh | bash
+
+# Or with HTTPS if GitHub SSH isn't set up
+curl -fsSL https://raw.githubusercontent.com/alexander-bech/dotfiles/master/.local/bin/install-dotfiles.sh | bash -s -- --https
+```
+
+**One-liner (as root):**
+```bash
+USERNAME=aibot &&
+useradd -m -s /bin/bash "$USERNAME" &&
+usermod -aG sudo "$USERNAME" &&
+passwd "$USERNAME" &&
+# optional ssh key copy:
+[ -f /root/.ssh/authorized_keys ] && {
+    cp -r /root/.ssh "/home/$USERNAME/" &&
+    chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.ssh" &&
+    chmod 700 "/home/$USERNAME/.ssh" &&
+    chmod 600 "/home/$USERNAME/.ssh/"*
+}
 ```
 
 ## Structure

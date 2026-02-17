@@ -165,6 +165,7 @@ install_base_deps() {
     cmd_exists zsh || packages+=(zsh)
     cmd_exists wget || packages+=(wget)
     cmd_exists rg || packages+=(ripgrep)
+    cmd_exists protobuf-compiler || packages+=(protobuf-compiler)
     
     if [[ ${#packages[@]} -eq 0 ]]; then
         print_success "All base dependencies already installed"

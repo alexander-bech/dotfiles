@@ -111,3 +111,5 @@ ex=🎯:\
 *.jar=♨:\
 *.java=♨:\
 "
+
+. "$HOME/.local/share/../bin/env"
